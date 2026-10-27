@@ -1,8 +1,19 @@
 import type { CollectionConfig } from 'payload'
+import { randomUUID } from 'node:crypto'
 
 export const Media: CollectionConfig = {
   slug: 'media',
   access: { read: () => true, create: ({ req: { user } }) => Boolean(user) },
+  hooks: {
+    beforeOperation: [
+      ({ operation, req }) => {
+        if ((operation === 'create' || operation === 'update') && req.file) {
+          const extension = req.file.name.match(/\.[^.]+$/)?.[0].toLowerCase() ?? ''
+          req.file.name = `${randomUUID()}${extension}`
+        }
+      },
+    ],
+  },
   upload: {
     mimeTypes: ['image/*'],
     imageSizes: [
